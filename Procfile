@@ -1,0 +1,1 @@
+web: gunicorn SteamStats:app --log-file main.log
