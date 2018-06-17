@@ -14,10 +14,8 @@ oid = OpenID(app)
 
 @app.route('/')
 def index():
-    print(session)
     if 'user_id' in session:
         user_logged_in = True
-        #print('logged in? ' + str(session['user_id']))
         if session['user_id'] == None:
             return render_template('login.jinja2', user_logged_in=False)
         else:
@@ -35,13 +33,11 @@ def login():
 @oid.after_login
 def create_or_login(auth):
     _steam_re = re.compile('steamcommunity.com/openid/id/(.*?)$')
-    print('response: ' + str(auth))
     match = _steam_re.search(auth.identity_url)
     g.user = {}
     steamid = match.group(1)
-    print('user: ' + str(steamid))
     g.user['id'] = steamid
-    session['user_id'] = g.user['id']
+    session['user_id'] = steamid
     user_logged_in = True
     return redirect('/')
 
