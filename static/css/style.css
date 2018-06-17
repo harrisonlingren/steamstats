@@ -1,0 +1,18 @@
+#steamlogo {
+    fill: white;
+}
+
+.footer {
+    position: absolute;
+    bottom: 0;
+    height: 60px;
+    width: 100%;
+}
+
+.footer-text {
+    margin-top: 20px;
+}
+
+.footer-btn {
+    margin-top: 12px;
+}
