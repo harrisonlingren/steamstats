@@ -19,6 +19,7 @@
 <body>
     <div id="header">
         <h1>SteamStats</h1>
+        {% if user_logged_in %}
         <div class="dropdown show">
             <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 Username Variable
@@ -27,7 +28,7 @@
             <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                 <a class="dropdown-item" href="#">Profile</a>
                 <a class="dropdown-item" href="#">Stats</a>
-                <a class="dropdown-item" href="#">Logout</a>
+                <a class="dropdown-item" href="/logout">Logout</a>
             </div>
         </div>
         <form>
@@ -36,6 +37,7 @@
                 <input type="text" class="form-control" id="userInput" placeholder="Steam ID/Username">
             </div>
         </form>
+        {% endif %}
   </div>
     </div>
     <div id="content">

@@ -12,18 +12,18 @@ app.config.update({
 
 oid = OpenID(app)
 
-
 @app.route('/')
 def index():
     print(session)
     if 'user_id' in session:
+        user_logged_in = True
         #print('logged in? ' + str(session['user_id']))
         if session['user_id'] == None:
-            return render_template('login.jinja2')
+            return render_template('login.jinja2', user_logged_in=False)
         else:
-            return render_template('index.jinja2')
+            return render_template('index.jinja2', user_logged_in=True)
     else:
-        return render_template('login.jinja2') 
+        return render_template('login.jinja2', user_logged_in=False)
     
 
 # login flow
