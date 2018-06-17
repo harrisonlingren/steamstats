@@ -55,7 +55,7 @@ def before_request():
 @app.route('/logout')
 def logout():
     session.pop('user_id', None)
-    return redirect(oid.get_next_url())
+    return redirect('/')
 
 
 # 404 handler
