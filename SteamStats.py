@@ -67,8 +67,8 @@ def page_not_found(e):
 @app.route('/profile')
 def profile():
     UserInfo = User(session['user_id'])
-    jej = datetime.fromtimestamp(UserInfo.time_created)
-    return render_template('profile.jinja2', user_logged_in=True, username=UserInfo.username, avatar=UserInfo.avatar, timeCreated=jej)
+    realDate = datetime.fromtimestamp(UserInfo.time_created)
+    return render_template('profile.jinja2', user_logged_in=True, username=UserInfo.username, avatar=UserInfo.avatar, timeCreated=realDate)
 
 if __name__ == '__main__':
     app.run()
