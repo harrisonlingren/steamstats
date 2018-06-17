@@ -1,6 +1,8 @@
-import os, re
+import os, re, requests
 from flask import Flask, request, redirect, render_template, abort, jsonify, session, g
 from flask_openid import OpenID
+from User import User
+from datetime import datetime
 
 app = Flask(__name__)
 app.config.update({
@@ -15,11 +17,11 @@ oid = OpenID(app)
 @app.route('/')
 def index():
     if 'user_id' in session:
-        user_logged_in = True
         if session['user_id'] == None:
             return render_template('login.jinja2', user_logged_in=False)
         else:
-            return render_template('index.jinja2', user_logged_in=True)
+            UserInfo = User(session['user_id'])
+            return render_template('index.jinja2', user_logged_in=True, username=UserInfo.username, avatar=UserInfo.avatar, timeCreated=UserInfo.time_created)
     else:
         return render_template('login.jinja2', user_logged_in=False)
     
@@ -38,7 +40,6 @@ def create_or_login(auth):
     steamid = match.group(1)
     g.user['id'] = steamid
     session['user_id'] = steamid
-    user_logged_in = True
     return redirect('/')
 
 
@@ -54,13 +55,20 @@ def before_request():
 @app.route('/logout')
 def logout():
     session.pop('user_id', None)
-    return redirect(oid.get_next_url())
+    return redirect('/')
 
 
 # 404 handler
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.jinja2'), 404
+
+# Profile Page
+@app.route('/profile')
+def profile():
+    UserInfo = User(session['user_id'])
+    realDate = datetime.fromtimestamp(UserInfo.time_created)
+    return render_template('profile.jinja2', user_logged_in=True, username=UserInfo.username, avatar=UserInfo.avatar, timeCreated=realDate)
 
 if __name__ == '__main__':
     app.run()
