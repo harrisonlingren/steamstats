@@ -19,6 +19,24 @@
 <body>
     <div id="header">
         <h1>SteamStats</h1>
+        <div class="dropdown show">
+            <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Username Variable
+            </a>
+
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                <a class="dropdown-item" href="#">Profile</a>
+                <a class="dropdown-item" href="#">Stats</a>
+                <a class="dropdown-item" href="#">Logout</a>
+            </div>
+        </div>
+        <form>
+            <div class="form-group">
+                <label for="userInput">Search for User</label>
+                <input type="text" class="form-control" id="userInput" placeholder="Steam ID/Username">
+            </div>
+        </form>
+  </div>
     </div>
     <div id="content">
         {% block content %}
