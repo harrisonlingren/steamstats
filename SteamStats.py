@@ -1,6 +1,7 @@
-import os, re
+import os, re, requests
 from flask import Flask, request, redirect, render_template, abort, jsonify, session, g
 from flask_openid import OpenID
+from User import User
 
 app = Flask(__name__)
 app.config.update({
@@ -18,7 +19,8 @@ def index():
         if session['user_id'] == None:
             return render_template('login.jinja2', user_logged_in=False)
         else:
-            return render_template('index.jinja2', user_logged_in=True)
+            UserInfo = User(session['user_id'])
+            return render_template('index.jinja2', user_logged_in=True, username=UserInfo.username, avatar=UserInfo.avatar, timeCreated=UserInfo.time_created)
     else:
         return render_template('login.jinja2', user_logged_in=False)
     
