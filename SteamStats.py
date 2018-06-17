@@ -1,6 +1,11 @@
 from flask import Flask, request, redirect, render_template, abort
 
 app = Flask(__name__)
+app.config.update({
+    'SESSION_PERMANENT': True,
+    'PERMANENT_SESSION_LIFETIME': 2592000,
+    'DEBUG': True
+})
 
 @app.route('/')
 def index():
@@ -8,7 +13,7 @@ def index():
 
 @app.errorhandler(404)
 def page_not_found(e):
-    return render_template('404.jinja2'), 404
+    return render_template('404.jinja2', error=e), 404
 
 if __name__ == '__main__':
     app.run()
