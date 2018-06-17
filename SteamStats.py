@@ -13,7 +13,11 @@ def index():
 
 @app.errorhandler(404)
 def page_not_found(e):
-    return render_template('404.jinja2', error=e), 404
+    return render_template('404.jinja2'), 404
+    
+@app.route('/login')
+def login():
+    return render_template('login.jinja2')
 
 if __name__ == '__main__':
     app.run()
