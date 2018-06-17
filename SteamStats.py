@@ -15,7 +15,6 @@ oid = OpenID(app)
 @app.route('/')
 def index():
     if 'user_id' in session:
-        user_logged_in = True
         if session['user_id'] == None:
             return render_template('login.jinja2', user_logged_in=False)
         else:
@@ -38,7 +37,6 @@ def create_or_login(auth):
     steamid = match.group(1)
     g.user['id'] = steamid
     session['user_id'] = steamid
-    user_logged_in = True
     return redirect('/')
 
 
