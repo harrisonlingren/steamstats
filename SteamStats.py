@@ -64,5 +64,12 @@ def logout():
 def page_not_found(e):
     return render_template('404.jinja2'), 404
 
+# Profile Page
+@app.route('/profile')
+def profile():
+    UserInfo = User(session['user_id'])
+    quaznar = UserInfo.time_created
+    return render_template('profile.jinja2', user_logged_in=True, username=UserInfo.username, avatar=UserInfo.avatar, timeCreated=quaznar)
+
 if __name__ == '__main__':
     app.run()
