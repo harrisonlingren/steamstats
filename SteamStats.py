@@ -2,6 +2,7 @@ import os, re, requests
 from flask import Flask, request, redirect, render_template, abort, jsonify, session, g
 from flask_openid import OpenID
 from User import User
+from datetime import datetime
 
 app = Flask(__name__)
 app.config.update({
@@ -66,8 +67,8 @@ def page_not_found(e):
 @app.route('/profile')
 def profile():
     UserInfo = User(session['user_id'])
-    quaznar = UserInfo.time_created
-    return render_template('profile.jinja2', user_logged_in=True, username=UserInfo.username, avatar=UserInfo.avatar, timeCreated=quaznar)
+    jej = datetime.fromtimestamp(UserInfo.time_created)
+    return render_template('profile.jinja2', user_logged_in=True, username=UserInfo.username, avatar=UserInfo.avatar, timeCreated=jej)
 
 if __name__ == '__main__':
     app.run()
