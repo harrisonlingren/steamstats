@@ -1,0 +1,42 @@
+#steamlogo {
+    fill: white;
+}
+
+.footer {
+    position: absolute;
+    bottom: 0;
+    height: 60px;
+    width: 100%;
+}
+
+.footer-text {
+    margin-top: 20px;
+}
+
+.footer-btn {
+    margin-top: 12px;
+}
+
+.table-img {
+    max-width: 33%;
+    height: auto;
+}
+
+#loader {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -webkit-animation:spin 2s linear infinite;
+    -moz-animation:spin 2s linear infinite;
+    animation:spin 2s linear infinite;
+}
+
+#loader .fa-spinner {
+    width: 32px;
+    height: 32px;
+    color: #007bff;
+}
+
+@-moz-keyframes spin { 100% { -moz-transform: rotate(360deg); } }
+@-webkit-keyframes spin { 100% { -webkit-transform: rotate(360deg); } }
+@keyframes spin { 100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); } }

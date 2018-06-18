@@ -1,0 +1,26 @@
+{% extends 'layout.jinja2' %}
+
+{% block content %}
+
+<div style="text-align: center;">
+    <h1><img src= "{{ avatar }}" class="img-fluid" alt="Responsive image"></img></h1>
+    <h1>{{ username }}'s Profile</h1>
+    <h4>Your profile was created on {{ time_created }}.</h4>
+</div>
+
+<div id="games">
+    <table class="table table-hover">
+        <thead>
+            <th scope="col"></th>
+            <th scope="col">Game</th>
+            <th scope="col">Genre</th>
+            <th scope="col">Price</th>
+            <th scope="col">Time Played</th>
+        </thead>
+
+        <tbody id="gamesinfo">
+        </tbody>
+    </table>
+</div>
+<script>loadGameDetails()</script>
+{% endblock %}
