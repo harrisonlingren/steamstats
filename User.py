@@ -1,5 +1,6 @@
 import requests, os, json
 from dotenv import load_dotenv, find_dotenv
+from Game import Game
 
 load_dotenv(find_dotenv())
 
@@ -12,7 +13,7 @@ class User:
     avatar = ''
     steam_id = ''
     time_created = ''
-    library = []
+    library = {}
 
     # intialize class
     def __init__(self, steam_id):
@@ -34,6 +35,13 @@ class User:
             + '&include_played_free_games=1&format=json'
 
         library_req = requests.get(request_uri)
-        library = library_req.json()['response']['games']
+        library_array = library_req.json()['response']['games']
+
+        library = {}
+        for game in library_array:
+            steamid = str(game['appid'])
+            library[steamid] = Game(steamid)
+        
+        print(library)
 
         return library
