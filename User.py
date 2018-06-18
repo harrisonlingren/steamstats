@@ -40,7 +40,7 @@ class User:
         library = {}
         for game in library_array:
             steamid = str(game['appid'])
-            library[steamid] = Game(steamid)
+            library[steamid] = {'game': Game(steamid), 'played_time': game['playtime_forever']}
         
         print(library)
 
