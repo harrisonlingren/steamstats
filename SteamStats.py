@@ -1,5 +1,5 @@
 import os, re, requests
-from flask import Flask, request, redirect, render_template, abort, jsonify, session, g
+from flask import Flask, request, redirect, render_template, abort, session, g
 from flask_openid import OpenID
 from User import User
 from datetime import datetime
