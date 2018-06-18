@@ -1,4 +1,5 @@
 import requests, os, json
+from datetime import datetime
 from dotenv import load_dotenv, find_dotenv
 from Game import Game
 
@@ -25,11 +26,11 @@ class User:
         self.username = user_info['personaname']
         self.avatar = user_info['avatarfull']
         self.steam_id = steam_id
-        self.time_created = user_info['timecreated']
-        self.library = self.__GetLibrary()
+        self.time_created = datetime.fromtimestamp(user_info['timecreated'])
+        self.library = {}
     
     # Fetches the user's game library
-    def __GetLibrary(self):
+    def GetLibrary(self):
         request_uri = STEAM_API_URL + 'IPlayerService/GetOwnedGames' \
             + '/v1?key=' + STEAM_API_KEY + '&steamid=' + self.steam_id \
             + '&include_played_free_games=1&format=json'
@@ -39,9 +40,25 @@ class User:
 
         library = {}
         for game in library_array:
-            steamid = str(game['appid'])
-            library[steamid] = {'game': Game(steamid), 'played_time': game['playtime_forever']}
-        
-        print(library)
+            steam_id = str(game['appid'])
+            library[steam_id] = {'game': Game(steam_id), 'played_time': game['playtime_forever']}
 
-        return library
+        self.library = library
+        return self.library
+
+    def asdict(self):
+        d = {}
+
+        d['username'] = self.username
+        d['avatar'] = self.avatar
+        d['steam_id'] = self.steam_id
+        d['time_created'] = self.time_created
+        
+        d['library'] = {}
+        for app_id, gamevals in self.library.items():
+            d['library'][app_id] = { 'game': dict(gamevals['game']), 'played_time': gamevals['played_time']}
+        
+        return d
+
+    def __str__(self):
+        return str(self.asdict())

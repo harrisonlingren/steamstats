@@ -1,4 +1,5 @@
 import requests, os
+from datetime import datetime
 from dotenv import load_dotenv, find_dotenv
 load_dotenv(find_dotenv())
 
@@ -31,24 +32,41 @@ class Game:
             self.id = app_id
             self.title = game_info['name']
             
-            if game_info['is_free']:
+            print(request_uri)
+            if game_info['is_free'] == True:
                 self.price = '0.00'
-            else:
+            elif game_info['is_free'] == False:
+
                 # format price string from cents
-                self.price = str(game_info['price_overview']['final'])[:-2] \
-                    + '.' + str(game_info['price_overview']['final'])[-2:]
+                try:
+                    self.price = str(game_info['price_overview']['final'])[:-2] \
+                        + '.' + str(game_info['price_overview']['final'])[-2:]
+                except KeyError:
+                    self.price = '0.00'
             
             # concat genres
-            if len(game_info['genres']) > 1:
-                self.genre = game_info['genres'][0]['description']
-                for genre in game_info['genres'][1:]:
-                    self.genre += ', ' + genre['description']
-            else:
-                self.genre = game_info['genres'][0]['description']
+            try:
+                if len(game_info['genres']) > 1:
+                    self.genre = game_info['genres'][0]['description']
+                    for genre in game_info['genres'][1:]:
+                        self.genre += ', ' + genre['description']
+                else:
+                    self.genre = game_info['genres'][0]['description']
+            except KeyError:
+                self.genre = ''
             
             self.description = game_info['detailed_description']
             self.image = game_info['header_image']
             self.release_date = game_info['release_date']['date']
-    
+
+    def __iter__(self):
+        yield 'app_id', self.app_id
+        yield 'title', self.title
+        yield 'price', self.price
+        yield 'description', self.description
+        yield 'image', self.image
+        yield 'release_date', self.release_date
+        yield 'genre', self.genre
+
     def __str__(self):
-        return (self.id + ': ' + self.title)
+        return str(dict(self))
