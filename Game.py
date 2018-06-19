@@ -24,6 +24,7 @@ class Game:
         request_uri = STEAM_STORE_API_URL \
             + 'appdetails?appids=' + app_id
         
+        #print(request_uri)
         game_info_request = requests.get(request_uri)
 
         if game_info_request.json()[app_id]['success']:
@@ -32,7 +33,6 @@ class Game:
             self.id = app_id
             self.title = game_info['name']
             
-            print(request_uri)
             if game_info['is_free'] == True:
                 self.price = '0.00'
             elif game_info['is_free'] == False:

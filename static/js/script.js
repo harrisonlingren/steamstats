@@ -1,26 +1,48 @@
+var profileId = '';
+
 $(document).ready(() => {
-    $('#loader').hide();
+    $('.progress').hide();
 });
 
 function loadGameDetails() {
-    $('#loader').show();
+    profileId =  $("meta[name=profile]").attr("content");
+    $('.progress').show();
     let gameLibrary = {};
     if (localStorage.userInfo) {
         let userInfo = JSON.parse(localStorage.userInfo);
         gameLibrary = userInfo.library;
         buildTable(gameLibrary);
     } else {
-        $('#loader').show();
-        let profileId = $("meta[name=locale]").attr("content");
-        fetch('/user/76561198061533639')
+        fetch('/user/' + profileId)
         .then(response => {
-            return response.json();
-        })
-        .then(body => {
-            localStorage.userInfo = JSON.stringify(body);
-            buildTable(body.library);
+            if (response.status == 202) {
+                checkLoadProgress();
+            } else if (response.status == 200) {
+                response.json().then((body) => {
+                    localStorage.userInfo = JSON.stringify(body);
+                    buildTable(body.library);
+                });
+            }
         });
     }
+}
+
+function checkLoadProgress() {
+    fetch('/user/' + profileId + '/count')
+    .then(response => {
+        return response.json();
+    })
+    .then(body => {
+        if (body.total != body.loaded) {
+            let progress = Math.round(body.loaded * 100 / body.total);
+            //console.log('Load progress: ' + progress);
+            $('.progress-bar').attr('aria-valuenow', progress);
+            $('.progress-bar').css('width', progress + '%');
+            setTimeout(checkLoadProgress, 1000);
+        } else {
+            loadGameDetails();
+        }
+    })
 }
 
 function buildTable(games) {
@@ -52,5 +74,5 @@ function buildTable(games) {
 
         $('#games table').append(newRow);
     };
-    $('#loader').hide();
+    $('.progress').hide();
 }

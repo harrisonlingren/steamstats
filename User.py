@@ -15,6 +15,7 @@ class User:
     steam_id = ''
     time_created = ''
     library = {}
+    gamecount = 0
 
     # intialize class
     def __init__(self, steam_id):
@@ -38,12 +39,13 @@ class User:
         library_req = requests.get(request_uri)
         library_array = library_req.json()['response']['games']
 
+        self.gamecount = len(library_array)
+
         library = {}
         for game in library_array:
             steam_id = str(game['appid'])
-            library[steam_id] = {'game': Game(steam_id), 'played_time': game['playtime_forever']}
+            self.library[steam_id] = {'game': Game(steam_id), 'played_time': game['playtime_forever']}
 
-        self.library = library
         return self.library
 
     def asdict(self):

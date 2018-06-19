@@ -1,7 +1,10 @@
 import os, re, requests
 from flask import Flask, request, redirect, render_template, abort, session, g, jsonify, make_response
 from flask_openid import OpenID
+from threading import Thread
+
 from User import User
+
 
 app = Flask(__name__)
 app.config.update({
@@ -75,23 +78,42 @@ def profile():
     else:
         steam_id = session['user_id']
         if steam_id not in user_info_store:
-                user_info_store[steam_id] = User(steam_id)
+            user_info_store[steam_id] = User(steam_id)
         user_info = user_info_store[steam_id]
         return render_template('profile.jinja2', steam_id=steam_id, username=user_info.username, time_created=user_info.time_created, avatar=user_info.avatar)
 
 
-# Send user data by steam_id
+# Get user data by steam_id
 @app.route('/user/<steam_id>')
 def GetUserInfo(steam_id):
+    def GetGames(user):
+        user.GetLibrary()
+
     if steam_id in user_info_store:
-        user_info = user_info_store[ steam_id ]
 
-        if len(user_info.library) < 1:
-            user_info_store[steam_id].library = user_info.GetLibrary()
+        if len(user_info_store[steam_id].library) < 1:
+            thread = Thread(target=GetGames, args=[user_info_store[steam_id]])
+            thread.start()
+            return make_response('Collecting game library...', 202)
 
-        serialized_user = jsonify(user_info.asdict())
-        return make_response(serialized_user, 200)
+        elif len(user_info_store[steam_id].library) >= 1:
+            serialized_user = jsonify(user_info_store[steam_id].asdict())
+            return make_response(serialized_user, 200)
+        
+        else:
+            return make_response('Error: There was a problem completing your request. Check your query and try again.', 400)
+        
+    else:
+        return abort(404)
 
+@app.route('/user/<steam_id>/count')
+def GetUserGameCount(steam_id):
+    if steam_id in user_info_store:
+        result = {'total': user_info_store[steam_id].gamecount, 'loaded': len(user_info_store[steam_id].library)}
+        if result['total'] > result['loaded']:
+            return make_response(jsonify(result), 202)
+        else:
+            return make_response(jsonify(result), 200)
     else:
         return abort(404)
 
