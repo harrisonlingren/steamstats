@@ -35,7 +35,7 @@ function checkLoadProgress() {
     .then(body => {
         if (body.total != body.loaded) {
             let progress = Math.round(body.loaded * 100 / body.total);
-            console.log('Load progress: ' + progress);
+            //console.log('Load progress: ' + progress);
             $('.progress-bar').attr('aria-valuenow', progress);
             $('.progress-bar').css('width', progress + '%');
             setTimeout(checkLoadProgress, 1000);
