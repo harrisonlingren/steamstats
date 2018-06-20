@@ -94,6 +94,11 @@ def profile():
 def results():
     return render_template('results.jinja2')
 
+# Friends Page
+@app.route('/friends')
+def friends():
+    return render_template('friends.jinja2')
+  
 # Get user data by steam_id
 @app.route('/user/<steam_id>')
 def GetUserInfo(steam_id):
