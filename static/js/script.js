@@ -51,9 +51,11 @@ function buildTable(games) {
 
         let newRow = $('<tr></tr>');
         let imgCell = $('<td></td>'); imgCell
+            .append( $('<a></a>')
+            .attr('href', 'http://store.steampowered.com/app/'+app_id)
             .append( $('<img></img>')
             .attr('src', thisGame.image)
-            .addClass('table-img'));
+            .addClass('table-img')));
 
         let titleCell = $('<td></td>').text(thisGame.title);
         let genreCell = $('<td></td>').text(thisGame.genre);
