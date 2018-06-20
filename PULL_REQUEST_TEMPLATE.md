@@ -1,3 +1,6 @@
-#45
+Fill in the following info below for your PR:
 
-This puts links into the steam pictures.
+- Is this for an issue? If so, which?
+- What does this change do?
+
+Be sure to request a reviewer to the right to get your change merged.
