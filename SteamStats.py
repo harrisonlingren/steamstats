@@ -82,6 +82,11 @@ def profile():
         user_info = user_info_store[steam_id]
         return render_template('profile.jinja2', steam_id=steam_id, username=user_info.username, time_created=user_info.time_created, avatar=user_info.avatar)
 
+# Results Page
+@app.route('/results')
+def results():
+    return render_template('results.jinja2')
+
 
 # Get user data by steam_id
 @app.route('/user/<steam_id>')
