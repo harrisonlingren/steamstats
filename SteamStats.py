@@ -5,7 +5,16 @@ from threading import Thread
 
 from User import User
 
+# flag for GetLibrary thread
+GET_LIB_WORKING = False
 
+# cache user info in memory
+user_info_store = {}
+
+# cache game info in memory
+user_info_store = {}
+
+# init app
 app = Flask(__name__)
 app.config.update({
     'SECRET_KEY': os.getenv('SECRET_KEY'),
@@ -16,8 +25,6 @@ app.config.update({
 
 oid = OpenID(app)
 
-# cache user info in memory
-user_info_store = {}
 
 @app.route('/')
 def index():
@@ -87,21 +94,28 @@ def profile():
 def results():
     return render_template('results.jinja2')
 
-
 # Get user data by steam_id
 @app.route('/user/<steam_id>')
 def GetUserInfo(steam_id):
+    global GET_LIB_WORKING
+
     def GetGames(user):
+        global GET_LIB_WORKING
+
         user.GetLibrary()
+        GET_LIB_WORKING = False
 
     if steam_id in user_info_store:
-
-        if len(user_info_store[steam_id].library) < 1:
+        if (not GET_LIB_WORKING) and len(user_info_store[steam_id].library) < 1:
             thread = Thread(target=GetGames, args=[user_info_store[steam_id]])
             thread.start()
+            GET_LIB_WORKING = True
             return make_response('Collecting game library...', 202)
 
-        elif len(user_info_store[steam_id].library) >= 1:
+        elif GET_LIB_WORKING:
+            return make_response('Collecting game library...', 202)
+            
+        elif not GET_LIB_WORKING:
             serialized_user = jsonify(user_info_store[steam_id].asdict())
             return make_response(serialized_user, 200)
         
@@ -109,7 +123,7 @@ def GetUserInfo(steam_id):
             return make_response('Error: There was a problem completing your request. Check your query and try again.', 400)
         
     else:
-        return abort(404)
+        return make_response(jsonify({'error': 'User not found'}), 404)
 
 @app.route('/user/<steam_id>/count')
 def GetUserGameCount(steam_id):
@@ -120,7 +134,7 @@ def GetUserGameCount(steam_id):
         else:
             return make_response(jsonify(result), 200)
     else:
-        return abort(404)
+        return make_response(jsonify({'error': 'User not found'}), 404)
 
 if __name__ == '__main__':
     app.run()
