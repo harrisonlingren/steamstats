@@ -184,9 +184,10 @@ def GetUserInfo(steam_id):
 #   This endpoint is used to poll load progress)
 @app.route('/user/<steam_id>/count')
 def GetUserGameCount(steam_id):
+    global GET_LIB_WORKING
     if steam_id in user_info_store:
         result = {'total': user_info_store[steam_id].gamecount, 'loaded': len(user_info_store[steam_id].library)}
-        if result['total'] > result['loaded']:
+        if GET_LIB_WORKING and result['total'] > result['loaded']:
             return make_response(jsonify(result), 202)
 
         else:
