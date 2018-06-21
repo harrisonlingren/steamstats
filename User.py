@@ -41,7 +41,6 @@ class User:
 
         self.gamecount = len(library_array)
 
-        library = {}
         for game in library_array:
             steam_id = str(game['appid'])
             self.library[steam_id] = {'game': Game(steam_id), 'played_time': game['playtime_forever']}

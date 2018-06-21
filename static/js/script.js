@@ -8,8 +8,8 @@ function loadGameDetails() {
     profileId =  $("meta[name=profile]").attr("content");
     $('.progress').show();
     let gameLibrary = {};
-    if (localStorage.userInfo) {
-        let userInfo = JSON.parse(localStorage.userInfo);
+    if (localStorage[profileId]) {
+        let userInfo = JSON.parse(localStorage[profileId]);
         gameLibrary = userInfo.library;
         buildTable(gameLibrary);
     } else {
@@ -19,7 +19,7 @@ function loadGameDetails() {
                 checkLoadProgress();
             } else if (response.status == 200) {
                 response.json().then((body) => {
-                    localStorage.userInfo = JSON.stringify(body);
+                    localStorage[profileId] = JSON.stringify(body);
                     buildTable(body.library);
                 });
             }

@@ -6,4 +6,12 @@
     <h1>Results:</h1>
 </div>
 
+{% for result in results %}
+<div class="search-result">
+    <a href="{{result.url}}">{{result.text}}</a>
+</div>
+{% endfor %}
+
+
+
 {% endblock %}
