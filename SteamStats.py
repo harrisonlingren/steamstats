@@ -133,6 +133,7 @@ def results():
 
     # get search params
     keyword = request.args.get('q')
+    keyword = keyword.lower()
     results = []
 
     for (steam_id, user) in user_info_store.items():
