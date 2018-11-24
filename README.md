@@ -3,12 +3,8 @@
 
 Hello and welcome to Steamstats!
 
-The purpose of this code is to create a reliable website
-
-that will allow users to see various statistics about
-
-thier Steam account.
+Steamstats is a web app that allows users to see various detailed info about their game libarary and friends list, including better and more advanced search function than the main site/client.
 
 <br>
 
-Created by Harrison Lingren and Marvin Scott
+App created by @harrisonlingren and @momm3
