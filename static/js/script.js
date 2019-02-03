@@ -1,80 +1,59 @@
 var profileId = '';
 
 $(document).ready(() => {
-    $('.progress').hide();
+    loadGameDetails();
 });
 
 function loadGameDetails() {
-    profileId =  $("meta[name=profile]").attr("content");
+    profileId = $("meta[name=profile]").attr("content");
     $('.progress').show();
-    let gameLibrary = {};
-    if (localStorage[profileId]) {
-        let userInfo = JSON.parse(localStorage[profileId]);
-        gameLibrary = userInfo.library;
-        buildTable(gameLibrary);
-    } else {
-        fetch('/user/' + profileId)
-        .then(response => {
-            if (response.status == 202) {
-                checkLoadProgress();
-            } else if (response.status == 200) {
-                response.json().then((body) => {
-                    localStorage[profileId] = JSON.stringify(body);
-                    buildTable(body.library);
+    fetch('/user/' + profileId + '/games').then(response => {
+        if (response.status == 200) {
+            response
+                .json()
+                .then((games) => {
+                    //console.log(games);
+                    buildTable(games);
                 });
-            }
-        });
-    }
-}
-
-function checkLoadProgress() {
-    fetch('/user/' + profileId + '/count')
-    .then(response => {
-        return response.json();
-    })
-    .then(body => {
-        if (body.total != body.loaded) {
-            let progress = Math.round(body.loaded * 100 / body.total);
-            //console.log('Load progress: ' + progress);
-            $('.progress-bar').attr('aria-valuenow', progress);
-            $('.progress-bar').css('width', progress + '%');
-            setTimeout(checkLoadProgress, 1000);
-        } else {
-            loadGameDetails();
         }
-    })
+    });
+    $('.progress').hide();
 }
 
 function buildTable(games) {
-    for (var app_id in games) {
-        let thisGame = games[app_id].game;
+    console.log('building table...');
+    games.forEach(game => {
+        console.log('Building row for ' + game);
 
-        let newRow = $('<tr></tr>');
-        let imgCell = $('<td></td>'); imgCell
-            .append( $('<a></a>')
-            .attr('href', 'http://store.steampowered.com/app/'+app_id)
-            .append( $('<img></img>')
-            .attr('src', thisGame.image)
-            .addClass('table-img')));
+        let app_id = game.app_id
+        let game_data = game.game_data
+        let newRow = $('<tr id="' + app_id + '"></tr>');
+        let imgCell = $('<td></td>');
+        imgCell.append($('<a></a>').attr('href', 'http://store.steampowered.com/app/' + app_id).append($('<img></img>').attr('src', game_data.image).addClass('table-img')));
 
-        let titleCell = $('<td></td>').text(thisGame.title);
-        let genreCell = $('<td></td>').text(thisGame.genre);
+        let titleCell = $('<td></td>').text(game_data.title);
+        let genreCell = $('<td></td>').text(game_data.genre);
 
         let price = '';
-        if (thisGame.price != '0.00') {
-            price = '$' + thisGame.price;
+        if (game_data.price != '0.00') {
+            price = '$' + game_data.price;
         } else {
             price = 'Free';
         }
-        
+
         let priceCell = $('<td></td>').text(price);
 
-        let playedtime = ((games[app_id].played_time / 60).toFixed(2) + ' hours');
+        let playedtime = ((game.played_time / 60).toFixed(2) + ' hours');
         let playtimeCell = $('<td></td>').text(playedtime);
-        
-        newRow.append(imgCell).append(titleCell).append(genreCell).append(priceCell).append(playtimeCell);
+
+        newRow
+            .append(imgCell)
+            .append(titleCell)
+            .append(genreCell)
+            .append(priceCell)
+            .append(playtimeCell);
 
         $('#games table').append(newRow);
-    };
+    });
     $('.progress').hide();
 }
