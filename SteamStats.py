@@ -128,6 +128,7 @@ def profile():
 
         user_info = user_info_store[steam_id]
         user_library = buildLibraryForUser(steam_id)
+
         return render_template(
             'profile.jinja2',
             steam_id=steam_id,
@@ -144,12 +145,15 @@ def profileById(steam_id):
         user_info_store[steam_id] = User(steam_id)
 
     user_info = user_info_store[steam_id]
+    user_library = buildLibraryForUser(steam_id)
+
     return render_template(
         'profile.jinja2',
         steam_id=steam_id,
         username=user_info.username,
         time_created=user_info.time_created,
-        avatar=user_info.avatar)
+        avatar=user_info.avatar,
+        game_library=user_library)
 
 
 # Search results Page
@@ -300,21 +304,7 @@ def buildLibraryForUser(steam_id):
 def LoadMissingGames(missing_apps, steam_id):
     print('Data missing for {} apps, fetching...'.format(len(missing_apps)))
     for app_id in missing_apps:
-        game_data = GetGameInfo(app_id)
-        if game_data is not None:
-            played_time = ''
-            for game in user_info_store[steam_id].library:
-                if game['app_id'] == app_id:
-                    played_time = game['played_time']
-                    break
-
-            results.append({
-                'app_id': app_id,
-                'played_time': played_time,
-                'game_data': dict(game_data)
-            })
-        else:
-            continue
+        GetGameInfo(app_id)
 
 
 # Check game data against DB by app_id, add if missing
