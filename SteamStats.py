@@ -2,8 +2,9 @@ import os, re, requests
 from flask import Flask, request, redirect, render_template, abort, session, g, jsonify, make_response
 from flask_openid import OpenID
 from threading import Thread
-
+from pymongo import MongoClient
 from User import User
+from Game import Game
 
 # init app
 app = Flask(__name__)
@@ -20,8 +21,15 @@ oid = OpenID(app)
 # cache user info in memory
 user_info_store = {}
 
-# cache game info in memory
-game_info_store = {}
+# setup mongo client
+# connect to mongo and get collection
+DB_CONN_STR = os.getenv('DB_CONN_STR')
+DB_NAME = os.getenv('DB_NAME')
+GAMES_COL_NAME = os.getenv('GAMES_COL_NAME')
+
+_mongoclient = MongoClient(DB_CONN_STR)
+_SS_DB = _mongoclient[DB_NAME]
+_GAMES = _SS_DB[GAMES_COL_NAME]
 
 with app.app_context():
     ### template responses
@@ -36,13 +44,6 @@ with app.app_context():
         jsonify({
             'error': 'User not found'
         }), 404)
-
-### flags
-# GetLibrary thread
-GET_LIB_WORKING = False
-
-# LoadGamesInStore thread
-LOAD_GAMES_WORKING = False
 
 ### ROUTES below
 # -----------------------
@@ -165,16 +166,18 @@ def results():
                 'text': user.username
             })
 
-    for (app_id, game) in game_info_store.items():
-        if keyword in game.title or keyword in game.description or keyword in game.genre:
-            results.append({
-                'url':
-                'https://store.steampowered.com/app/' + app_id,
-                'text':
-                game.title
-            })
+    # search games db w/ keyword
+    games_results = list(_GAMES.find({'$text': {'$search': keyword}}))
+    for game in games_results:
+        results.append({
+            'url':
+            'https://store.steampowered.com/app/{}'.format(game['app_id']),
+            'text':
+            game['title']
+        })
 
-    print('search results:', results)
+    # serve results
+    # print('search results:', results)
     return render_template('results.jinja2', results=results)
 
 
@@ -187,28 +190,9 @@ def friends():
 # Get user data by steam_id
 @app.route('/user/<steam_id>')
 def GetUserInfo(steam_id):
-    global GET_LIB_WORKING
 
     if steam_id in user_info_store:
-        if (not GET_LIB_WORKING) and len(
-                user_info_store[steam_id].library) < 1:
-            thread = Thread(target=GetGames, args=[user_info_store[steam_id]])
-            thread.start()
-            GET_LIB_WORKING = True
-            return RESP_LIBRARY_PENDING
-
-        elif GET_LIB_WORKING:
-            return RESP_LIBRARY_PENDING
-
-        elif not GET_LIB_WORKING:
-            serialized_user = jsonify(user_info_store[steam_id].asdict())
-            return make_response(serialized_user, 200)
-
-        else:
-            return make_response(
-                'Error: There was a problem completing your request. Check your query and try again.',
-                400)
-
+        return make_response(jsonify(dict(user_info_store[steam_id])), 200)
     else:
         return RESP_USER_NOT_FOUND
 
@@ -218,13 +202,12 @@ def GetUserInfo(steam_id):
 #   This endpoint is used to poll load progress)
 @app.route('/user/<steam_id>/count')
 def GetUserGameCount(steam_id):
-    global GET_LIB_WORKING
     if steam_id in user_info_store:
         result = {
             'total': user_info_store[steam_id].gamecount,
             'loaded': len(user_info_store[steam_id].library)
         }
-        if GET_LIB_WORKING and result['total'] > result['loaded']:
+        if result['total'] > result['loaded']:
             return make_response(jsonify(result), 202)
 
         else:
@@ -238,37 +221,121 @@ def GetUserGameCount(steam_id):
 @app.route('/user/<steam_id>/games')
 def GetUserGameLibrary(steam_id):
     if steam_id in user_info_store:
-        if not GET_LIB_WORKING:
-            resp = jsonify(user_info_store[steam_id].library)
-            return make_response(resp, 200)
 
-        else:
-            return RESP_LIBRARY_PENDING
+        results = []
+
+        # get list of all user's game ids
+        full_app_list = []
+        for app in user_info_store[steam_id].library:
+            full_app_list.append(app['app_id'])
+
+        # get app data from DB
+        db_app_list = []
+        db_apps = _GAMES.find({'app_id': {'$in': full_app_list}})
+        for app in db_apps:
+            # save app_id's to a separte list
+            db_app_list.append(app['app_id'])
+
+            # find app play time from user profile
+            for lib_app in user_info_store[steam_id].library:
+                if app['app_id'] == lib_app['app_id']:
+                    played_time = lib_app['played_time']
+                    #break
+
+            # format game data
+            game_obj = Game(app['app_id'], fetch_data=False)
+            game_obj.set_data(
+                title=app['title'],
+                price=app['price'],
+                genre=app['genre'],
+                description=app['description'],
+                image=app['image'],
+                release_date=app['release_date'])
+
+            # gather results per app
+            results.append({
+                'app_id': app['app_id'],
+                'played_time': played_time,
+                'game_data': dict(game_obj)
+            })
+
+        print('{} apps loaded from DB'.format(len(db_app_list)))
+
+        # calculate # of apps missing in the DB
+        missing_app_list = [
+            app for app in full_app_list if app not in db_app_list
+        ]
+
+        thread = Thread(
+            target=LoadMissingGames, args=[missing_app_list, steam_id])
+        thread.start()
+
+        return make_response(jsonify(results), 200)
 
     else:
         return RESP_USER_NOT_FOUND
+
+
+# Get game details
+@app.route('/game/<app_id>')
+def GetGame(app_id):
+    result = GetGameInfo(app_id)
+    if result is not None:
+        return make_response(jsonify(dict(result)), 200)
 
 
 ### HELPER functions below
 # ------------------------
 
 
-def GetGames(user):
-    global GET_LIB_WORKING
+# fetch Steam data for missing apps and add to DB
+def LoadMissingGames(missing_apps, steam_id):
+    print('Data missing for {} apps, fetching...'.format(len(missing_apps)))
+    for app_id in missing_apps:
+        game_data = GetGameInfo(app_id)
+        if game_data is not None:
+            played_time = ''
+            for game in user_info_store[steam_id].library:
+                if game['app_id'] == app_id:
+                    played_time = game['played_time']
+                    break
 
-    user.GetLibrary()
-    GET_LIB_WORKING = False
+            results.append({
+                'app_id': app_id,
+                'played_time': played_time,
+                'game_data': dict(game_data)
+            })
+        else:
+            continue
 
-    if not LOAD_GAMES_WORKING:
-        thread = Thread(target=LoadGamesInStore, args=[user])
-        thread.start()
 
+# Check game data against DB by app_id, add if missing
+def GetGameInfo(app_id):
+    game_obj = Game(app_id)
 
-# Load previously fetched games into memory
-def LoadGamesInStore(user):
-    for (app_id, game) in user.library.items():
-        if game['game'].id not in game_info_store:
-            game_info_store[app_id] = game['game']
+    search_game = _GAMES.find_one({'app_id': app_id})
+    if search_game is None:
+        print('DB has no record for App#{}, fetching data...'.format(app_id))
+        game_obj.fetch_data()
+
+        # skip sending to DB if data hasn't loaded
+        if game_obj.title == '':
+            print('  Fetch failed, skipping...\n')
+            return None
+
+        db_result = _GAMES.insert_one(dict(game_obj))
+        print('  Added App#{} to the DB: {}\n'.format(app_id,
+                                                      db_result.inserted_id))
+    else:
+        game_obj.set_data(
+            title=search_game['title'],
+            price=search_game['price'],
+            genre=search_game['genre'],
+            description=search_game['description'],
+            image=search_game['image'],
+            release_date=search_game['release_date'])
+
+    return game_obj
 
 
 # Run the thing

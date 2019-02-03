@@ -15,7 +15,7 @@ class User:
     avatar = ''
     steam_id = ''
     time_created = ''
-    library = {}
+    library = []
     gamecount = 0
 
     # intialize class
@@ -29,10 +29,10 @@ class User:
         self.avatar = user_info['avatarfull']
         self.steam_id = steam_id
         self.time_created = datetime.fromtimestamp(user_info['timecreated'])
-        self.library = {}
+        self.__get_library()
 
     # Fetches the user's game library
-    def GetLibrary(self):
+    def __get_library(self):
         request_uri = STEAM_API_URL + 'IPlayerService/GetOwnedGames' \
             + '/v1?key=' + STEAM_API_KEY + '&steamid=' + self.steam_id \
             + '&include_played_free_games=1&format=json'
@@ -43,30 +43,18 @@ class User:
         self.gamecount = len(library_array)
 
         for game in library_array:
-            steam_id = str(game['appid'])
-            self.library[steam_id] = {
-                'game': Game(steam_id),
+            self.library.append({
+                'app_id': str(game['appid']),
                 'played_time': game['playtime_forever']
-            }
+            })
 
-        return self.library
-
-    def asdict(self):
-        d = {}
-
-        d['username'] = self.username
-        d['avatar'] = self.avatar
-        d['steam_id'] = self.steam_id
-        d['time_created'] = self.time_created
-
-        d['library'] = {}
-        for app_id, gamevals in self.library.items():
-            d['library'][app_id] = {
-                'game': dict(gamevals['game']),
-                'played_time': gamevals['played_time']
-            }
-
-        return d
+    def __iter__(self):
+        yield 'username', self.username
+        yield 'avatar', self.avatar
+        yield 'steam_id', self.steam_id
+        yield 'time_created', self.time_created.strftime("%Y-%m-%d %H:%M:%S")
+        yield 'gamecount', self.gamecount
+        yield 'library', self.library
 
     def __str__(self):
-        return str(self.asdict())
+        return str(self)
