@@ -7,6 +7,7 @@ STEAM_API_KEY = os.getenv('STEAM_API_KEY')
 STEAM_API_URL = 'https://api.steampowered.com/'
 STEAM_STORE_API_URL = 'https://store.steampowered.com/api/'
 
+
 class Game:
     # class attributes
     id = ''
@@ -17,13 +18,12 @@ class Game:
     image = ''
     release_date = ''
 
-
     def __init__(self, app_id):
         self.app_id = app_id
 
         request_uri = STEAM_STORE_API_URL \
             + 'appdetails?appids=' + app_id
-        
+
         #print(request_uri)
         game_info_request = requests.get(request_uri)
 
@@ -32,7 +32,7 @@ class Game:
 
             self.id = app_id
             self.title = game_info['name']
-            
+
             if game_info['is_free'] == True:
                 self.price = '0.00'
             elif game_info['is_free'] == False:
@@ -43,7 +43,7 @@ class Game:
                         + '.' + str(game_info['price_overview']['final'])[-2:]
                 except KeyError:
                     self.price = '0.00'
-            
+
             # concat genres
             try:
                 if len(game_info['genres']) > 1:
@@ -54,7 +54,7 @@ class Game:
                     self.genre = game_info['genres'][0]['description']
             except KeyError:
                 self.genre = ''
-            
+
             self.description = game_info['detailed_description']
             self.image = game_info['header_image']
             self.release_date = game_info['release_date']['date']
