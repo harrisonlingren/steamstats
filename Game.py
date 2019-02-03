@@ -39,6 +39,16 @@ class Game:
         #print(request_uri)
         game_info_request = requests.get(request_uri)
 
+        try:
+            if game_info_request.status_code != 200:
+                raise FetchDataError(
+                    'Could not fetch data for App#{}: {}'.format(
+                        self.app_id, game_info_request.status_code))
+
+        except FetchDataError:
+            ('Skipping App#{}'.format(self.app_id))
+            return
+
         if game_info_request.json()[self.app_id]['success']:
             game_info = game_info_request.json()[self.app_id]['data']
 
@@ -95,3 +105,7 @@ class Game:
 
     def __str__(self):
         return str(dict(self))
+
+
+class FetchDataError(Exception):
+    pass
