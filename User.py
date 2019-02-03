@@ -8,6 +8,7 @@ load_dotenv(find_dotenv())
 STEAM_API_KEY = os.getenv("STEAM_API_KEY")
 STEAM_API_URL = 'https://api.steampowered.com/'
 
+
 class User:
     # class attributes
     username = ''
@@ -29,7 +30,7 @@ class User:
         self.steam_id = steam_id
         self.time_created = datetime.fromtimestamp(user_info['timecreated'])
         self.library = {}
-    
+
     # Fetches the user's game library
     def GetLibrary(self):
         request_uri = STEAM_API_URL + 'IPlayerService/GetOwnedGames' \
@@ -43,7 +44,10 @@ class User:
 
         for game in library_array:
             steam_id = str(game['appid'])
-            self.library[steam_id] = {'game': Game(steam_id), 'played_time': game['playtime_forever']}
+            self.library[steam_id] = {
+                'game': Game(steam_id),
+                'played_time': game['playtime_forever']
+            }
 
         return self.library
 
@@ -54,11 +58,14 @@ class User:
         d['avatar'] = self.avatar
         d['steam_id'] = self.steam_id
         d['time_created'] = self.time_created
-        
+
         d['library'] = {}
         for app_id, gamevals in self.library.items():
-            d['library'][app_id] = { 'game': dict(gamevals['game']), 'played_time': gamevals['played_time']}
-        
+            d['library'][app_id] = {
+                'game': dict(gamevals['game']),
+                'played_time': gamevals['played_time']
+            }
+
         return d
 
     def __str__(self):
