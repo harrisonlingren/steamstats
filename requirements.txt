@@ -3,3 +3,4 @@ gunicorn>=19.8.1
 flask-openid==1.2.5
 requests>=2.20.0
 python-dotenv>=0.8.2
+pymongo[tls]>=3.7.2
