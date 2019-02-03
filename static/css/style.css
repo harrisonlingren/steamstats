@@ -1,40 +1,39 @@
 #steamlogo {
-    fill: white;
+  fill: white;
 }
 
 .container {
-    margin-top: 90px;
-    margin-bottom: 60px;
+  margin-top: 90px;
+  margin-bottom: 60px;
 }
 
 #games {
-    margin-bottom: 70px;
+  margin-bottom: 70px;
 }
 
 .footer {
-    position: fixed;
-    bottom: 0;
-    height: 60px;
-    width: 100%;
-    margin-left: 0;
-    margin-right: 0;
+  position: fixed;
+  bottom: 0;
+  height: 60px;
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
 }
 
 .footer-text {
-    margin-top: 20px;
+  margin-top: 20px;
 }
 
 .footer-btn {
-    margin-top: 12px;
+  margin-top: 12px;
 }
 
 .table-img {
-    max-width: 33%;
-    height: auto;
+  max-width: 80%;
+  height: auto;
 }
 
-
 .progress {
-    width: 33%;
-    margin: 0 auto;
+  width: 33%;
+  margin: 0 auto;
 }
