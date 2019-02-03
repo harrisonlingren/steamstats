@@ -37,15 +37,17 @@ class User:
             + '/v1?key=' + STEAM_API_KEY + '&steamid=' + self.steam_id \
             + '&include_played_free_games=1&format=json'
 
+        print(request_uri)
+
         library_req = requests.get(request_uri)
         library_array = library_req.json()['response']['games']
 
         self.gamecount = len(library_array)
 
         for game in library_array:
-            steam_id = str(game['appid'])
-            self.library[steam_id] = {
-                'game': Game(steam_id),
+            app_id = str(game['appid'])
+            self.library[app_id] = {
+                'game_data': Game(app_id, fetch_data=False),
                 'played_time': game['playtime_forever']
             }
 
