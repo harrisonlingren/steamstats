@@ -127,12 +127,15 @@ def profile():
             user_info_store[steam_id] = User(steam_id)
 
         user_info = user_info_store[steam_id]
+        user_library = buildLibraryForUser(steam_id)
+
         return render_template(
             'profile.jinja2',
             steam_id=steam_id,
             username=user_info.username,
             time_created=user_info.time_created,
-            avatar=user_info.avatar)
+            avatar=user_info.avatar,
+            game_library=user_library)
 
 
 # Profile Page (for specific user)
@@ -142,12 +145,15 @@ def profileById(steam_id):
         user_info_store[steam_id] = User(steam_id)
 
     user_info = user_info_store[steam_id]
+    user_library = buildLibraryForUser(steam_id)
+
     return render_template(
         'profile.jinja2',
         steam_id=steam_id,
         username=user_info.username,
         time_created=user_info.time_created,
-        avatar=user_info.avatar)
+        avatar=user_info.avatar,
+        game_library=user_library)
 
 
 # Search results Page
@@ -221,6 +227,27 @@ def GetUserGameCount(steam_id):
 @app.route('/user/<steam_id>/games')
 def GetUserGameLibrary(steam_id):
     if steam_id in user_info_store:
+        library = buildLibraryForUser(steam_id)
+        return make_response(jsonify(library), 200)
+    else:
+        return RESP_USER_NOT_FOUND
+
+
+# Get game details
+@app.route('/game/<app_id>')
+def GetGame(app_id):
+    result = GetGameInfo(app_id)
+    if result is not None:
+        return make_response(jsonify(dict(result)), 200)
+
+
+### HELPER functions below
+# ------------------------
+
+
+# Return array of games in user's library in the model {app_id:string, played_time:string, game_data:dict}
+def buildLibraryForUser(steam_id):
+    if steam_id in user_info_store:
 
         results = []
 
@@ -270,43 +297,14 @@ def GetUserGameLibrary(steam_id):
             target=LoadMissingGames, args=[missing_app_list, steam_id])
         thread.start()
 
-        return make_response(jsonify(results), 200)
-
-    else:
-        return RESP_USER_NOT_FOUND
-
-
-# Get game details
-@app.route('/game/<app_id>')
-def GetGame(app_id):
-    result = GetGameInfo(app_id)
-    if result is not None:
-        return make_response(jsonify(dict(result)), 200)
-
-
-### HELPER functions below
-# ------------------------
+        return results
 
 
 # fetch Steam data for missing apps and add to DB
 def LoadMissingGames(missing_apps, steam_id):
     print('Data missing for {} apps, fetching...'.format(len(missing_apps)))
     for app_id in missing_apps:
-        game_data = GetGameInfo(app_id)
-        if game_data is not None:
-            played_time = ''
-            for game in user_info_store[steam_id].library:
-                if game['app_id'] == app_id:
-                    played_time = game['played_time']
-                    break
-
-            results.append({
-                'app_id': app_id,
-                'played_time': played_time,
-                'game_data': dict(game_data)
-            })
-        else:
-            continue
+        GetGameInfo(app_id)
 
 
 # Check game data against DB by app_id, add if missing

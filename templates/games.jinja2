@@ -1,0 +1,31 @@
+{% block games %}
+
+    <div id="games">
+        <table class="table table-hover">
+            <thead>
+                <th scope="col"></th>
+                <th scope="col">Game</th>
+                <th scope="col">Genre</th>
+                <th scope="col">Price</th>
+                <th scope="col">Time Played</th>
+            </thead>
+
+            <tbody id="gamesinfo">
+                {% for game in game_library %}
+                    <tr id="4000">
+                        <td>
+                            <a href="http://store.steampowered.com/app/{{game.app_id}}">
+                                <img src="{{game.game_data.image}}" class="table-img">
+                            </a>
+                        </td>
+                        <td class="title">{{game.game_data.title}}</td>
+                        <td class="genre">{{game.game_data.genre}}</td>
+                        <td class="price" data-order="{{game.game_data.price}}">${{game.game_data.price}}</td>
+                        <td class="playtime" data-order="{{game.played_time}}">{{game.played_time}}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+{% endblock %}

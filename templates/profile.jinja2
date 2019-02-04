@@ -8,19 +8,6 @@
     <h4>Your profile was created on {{ time_created }}.</h4>
 </div>
 
-<div id="games">
-    <table class="table table-hover">
-        <thead>
-            <th scope="col"></th>
-            <th scope="col">Game</th>
-            <th scope="col">Genre</th>
-            <th scope="col">Price</th>
-            <th scope="col">Time Played</th>
-        </thead>
+{% include 'games.jinja2' with context %}
 
-        <tbody id="gamesinfo">
-        </tbody>
-    </table>
-</div>
-<script>loadGameDetails()</script>
 {% endblock %}
