@@ -6,6 +6,7 @@
     <h1><img src= "{{ avatar }}" class="img-fluid" alt="Responsive image"></img></h1>
     <h1>{{ username }}'s Profile</h1>
     <h4>Your profile was created on {{ time_created }}.</h4>
+    <p>Total value of library: <b>${{ library_value }}</b></p>
 </div>
 
 {% include 'games.jinja2' with context %}

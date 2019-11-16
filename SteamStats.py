@@ -1,4 +1,4 @@
-import os, re, requests
+import decimal, os, re, requests
 from flask import Flask, request, redirect, render_template, abort, session, g, jsonify, make_response
 from flask_openid import OpenID
 from threading import Thread
@@ -128,6 +128,7 @@ def profile():
 
         user_info = user_info_store[steam_id]
         user_library = buildLibraryForUser(steam_id)
+        user_library_value = getLibraryValue(user_library)
 
         return render_template(
             'profile.jinja2',
@@ -135,7 +136,8 @@ def profile():
             username=user_info.username,
             time_created=user_info.time_created,
             avatar=user_info.avatar,
-            game_library=user_library)
+            game_library=user_library,
+            library_value=user_library_value)
 
 
 # Profile Page (for specific user)
@@ -146,6 +148,7 @@ def profileById(steam_id):
 
     user_info = user_info_store[steam_id]
     user_library = buildLibraryForUser(steam_id)
+    user_library_value = getLibraryValue(user_library)
 
     return render_template(
         'profile.jinja2',
@@ -153,7 +156,8 @@ def profileById(steam_id):
         username=user_info.username,
         time_created=user_info.time_created,
         avatar=user_info.avatar,
-        game_library=user_library)
+        game_library=user_library,
+        library_value=user_library_value)
 
 
 # Search results Page
@@ -298,6 +302,15 @@ def buildLibraryForUser(steam_id):
         thread.start()
 
         return results
+
+# Calculate the total $ value of all games in a library
+def getLibraryValue(game_library):
+    total_value = decimal.Decimal(0.0)
+    for game in game_library:
+        price = decimal.Decimal(game['game_data']['price'])
+        total_value += price
+
+    return total_value
 
 
 # fetch Steam data for missing apps and add to DB
