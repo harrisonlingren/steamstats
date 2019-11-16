@@ -148,6 +148,7 @@ def profileById(steam_id):
 
     user_info = user_info_store[steam_id]
     user_library = buildLibraryForUser(steam_id)
+    user_library_value = getLibraryValue(user_library)
 
     return render_template(
         'profile.jinja2',
@@ -155,7 +156,8 @@ def profileById(steam_id):
         username=user_info.username,
         time_created=user_info.time_created,
         avatar=user_info.avatar,
-        game_library=user_library)
+        game_library=user_library,
+        library_value=user_library_value)
 
 
 # Search results Page
