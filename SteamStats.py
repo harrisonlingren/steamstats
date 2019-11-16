@@ -305,7 +305,8 @@ def buildLibraryForUser(steam_id):
 def getLibraryValue(game_library):
     total_value = decimal.Decimal(0.0)
     for game in game_library:
-        total_value += decimal.Decimal(game.price)
+        price = decimal.Decimal(game['game_data']['price'])
+        total_value += price
 
     return total_value
 
